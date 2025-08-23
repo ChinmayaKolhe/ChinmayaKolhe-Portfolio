@@ -1,4 +1,4 @@
-import Chinmaya from './components/Chinmaya'
+import Chinmaya from './pages/Chinmaya'
 
 function App() {
   return <Chinmaya />;
