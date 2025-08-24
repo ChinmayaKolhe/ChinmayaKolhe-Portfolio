@@ -1,8 +1,11 @@
-import React, { useEffect, useRef } from "react";
-import Helmet from "react-helmet";
+import React, { useEffect, useRef, useState } from "react";
+
 const Chinmaya = () => {
   const canvasRef = useRef(null);
- const structuredData = {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
+
+  const structuredData = {
     "@context": "https://schema.org",
     "@type": "Person",
     "name": "Chinmaya Kolhe",
@@ -30,6 +33,14 @@ const Chinmaya = () => {
       "https://www.linkedin.com/in/chinmaya-kolhe-34165524a/"
     ]
   };
+
+  // Scroll effect
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // Enhanced technical background effect
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -50,7 +61,12 @@ const Chinmaya = () => {
 
     // Binary code strings for tech effect
     const binaryStrings = [];
-    const binaryCount = 20;
+    const binaryCount = 25;
+
+    // Floating icons
+    const floatingIcons = [];
+    const iconCount = 8;
+    const icons = ['<', '>', '{', '}', '/', '\\', '|', '-'];
 
     class Particle {
       constructor() {
@@ -87,7 +103,6 @@ const Chinmaya = () => {
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
 
-        // Add glow effect
         ctx.shadowColor = this.color;
         ctx.shadowBlur = 10;
         ctx.fill();
@@ -127,6 +142,44 @@ const Chinmaya = () => {
       }
     }
 
+    class FloatingIcon {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.icon = icons[Math.floor(Math.random() * icons.length)];
+        this.size = Math.random() * 20 + 15;
+        this.speedX = Math.random() * 1 - 0.5;
+        this.speedY = Math.random() * 1 - 0.5;
+        this.rotation = 0;
+        this.rotationSpeed = Math.random() * 0.02 - 0.01;
+        this.opacity = Math.random() * 0.3 + 0.1;
+      }
+
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.rotation += this.rotationSpeed;
+
+        if (this.x > canvas.width + 50 || this.x < -50) {
+          this.speedX = -this.speedX;
+        }
+        if (this.y > canvas.height + 50 || this.y < -50) {
+          this.speedY = -this.speedY;
+        }
+      }
+
+      draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        ctx.font = `${this.size}px monospace`;
+        ctx.fillStyle = `rgba(124, 58, 237, ${this.opacity})`;
+        ctx.textAlign = 'center';
+        ctx.fillText(this.icon, 0, 0);
+        ctx.restore();
+      }
+    }
+
     // Initialize particles
     for (let i = 0; i < particleCount; i++) {
       particles.push(new Particle());
@@ -137,6 +190,11 @@ const Chinmaya = () => {
       binaryStrings.push(new BinaryString());
     }
 
+    // Initialize floating icons
+    for (let i = 0; i < iconCount; i++) {
+      floatingIcons.push(new FloatingIcon());
+    }
+
     // Animation loop
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -145,6 +203,12 @@ const Chinmaya = () => {
       binaryStrings.forEach((binaryString) => {
         binaryString.update();
         binaryString.draw();
+      });
+
+      // Draw floating icons
+      floatingIcons.forEach((icon) => {
+        icon.update();
+        icon.draw();
       });
 
       // Draw connections between particles
@@ -182,84 +246,100 @@ const Chinmaya = () => {
     };
   }, []);
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleResumeDownload = () => {
+    // Create a temporary link element
+    const link = document.createElement('a');
+    link.href = './Resume-ChinmayaKolhe.pdf';
+    link.download = 'Resume-ChinmayaKolhe.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Set document title and meta tags
+  useEffect(() => {
+    document.title = "Chinmaya Kolhe - Full Stack Developer | MERN Stack, Java, Python";
+    
+    // Update meta description
+    const metaDescription = document.querySelector('meta[name="description"]') || document.createElement('meta');
+    metaDescription.name = "description";
+    metaDescription.content = "Chinmaya Kolhe is a Full Stack Developer specializing in MERN stack, Java, Python, and Android development. View my portfolio and projects.";
+    if (!document.querySelector('meta[name="description"]')) {
+      document.head.appendChild(metaDescription);
+    }
+
+    // Add structured data
+    const structuredDataScript = document.createElement('script');
+    structuredDataScript.type = 'application/ld+json';
+    structuredDataScript.textContent = JSON.stringify(structuredData);
+    document.head.appendChild(structuredDataScript);
+
+    return () => {
+      // Cleanup structured data script on unmount
+      if (structuredDataScript.parentNode) {
+        structuredDataScript.parentNode.removeChild(structuredDataScript);
+      }
+    };
+  }, [structuredData]);
+
   return (
     <div className="chinmaya-portfolio">
-      <Helmet>
-        <title>
-          Chinmaya Kolhe - Full Stack Developer | MERN Stack, Java, Python
-        </title>
-        <meta
-          name="description"
-          content="Chinmaya Kolhe is a Full Stack Developer specializing in MERN stack, Java, Python, and Android development. View my portfolio and projects."
-        />
-        <meta
-          name="keywords"
-          content="Chinmaya Kolhe, Full Stack Developer, MERN Stack, Java Developer, Python Developer, Android Developer, Web Developer, Portfolio"
-        />
-        <meta name="author" content="Chinmaya Kolhe" />
-
-        {/* Open Graph tags for social media sharing */}
-        <meta
-          property="og:title"
-          content="Chinmaya Kolhe - Full Stack Developer"
-        />
-        <meta
-          property="og:description"
-          content="Portfolio of Chinmaya Kolhe, Full Stack Developer specializing in MERN stack, Java, Python, and Android development."
-        />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://chinmayakolhe.netlify.app" />
-        <meta
-          property="og:image"
-          content="https://chinmayakolhe.netlify.com/Chinmaya.jpg"
-        />
-
-        {/* Twitter Card tags */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@chinmayakolhe" />
-        <meta
-          name="twitter:title"
-          content="Chinmaya Kolhe - Full Stack Developer"
-        />
-        <meta
-          name="twitter:description"
-          content="Portfolio of Chinmaya Kolhe, Full Stack Developer specializing in MERN stack, Java, Python, and Android development."
-        />
-        <meta
-          name="twitter:image"
-          content="https://chinmayakolhe.netlify.com/Chinmaya.jpg"
-        />
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
-        {/* Canonical URL */}
-        <link rel="canonical" href="https://chinmayakolhe.netlify.app" />
-      </Helmet>
+      
       {/* Animated background canvas */}
       <canvas ref={canvasRef} className="background-canvas" />
 
       {/* Navigation */}
-      <nav className="nav">
+      <nav className={`nav ${scrollY > 50 ? 'nav-scrolled' : ''}`}>
         <div className="nav-container">
           <h1 className="nav-logo">CK</h1>
+          
+          {/* Desktop Menu */}
           <ul className="nav-menu">
+            <li><a href="#home" onClick={closeMobileMenu}>Home</a></li>
+            <li><a href="#education" onClick={closeMobileMenu}>Education</a></li>
+            <li><a href="#experience" onClick={closeMobileMenu}>Experience</a></li>
+            <li><a href="#skills" onClick={closeMobileMenu}>Skills</a></li>
+            <li><a href="#projects" onClick={closeMobileMenu}>Projects</a></li>
+            <li><a href="#contact" onClick={closeMobileMenu}>Contact</a></li>
             <li>
-              <a href="#home">Home</a>
+              <button onClick={handleResumeDownload} className="nav-resume-btn">
+                <i className="fas fa-download"></i> Resume
+              </button>
             </li>
+          </ul>
+
+          {/* Mobile Menu Button */}
+          <button 
+            className={`mobile-menu-btn ${isMobileMenuOpen ? 'active' : ''}`}
+            onClick={toggleMobileMenu}
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        <div className={`mobile-menu ${isMobileMenuOpen ? 'active' : ''}`}>
+          <ul className="mobile-nav-menu">
+            <li><a href="#home" onClick={closeMobileMenu}>Home</a></li>
+            <li><a href="#education" onClick={closeMobileMenu}>Education</a></li>
+            <li><a href="#experience" onClick={closeMobileMenu}>Experience</a></li>
+            <li><a href="#skills" onClick={closeMobileMenu}>Skills</a></li>
+            <li><a href="#projects" onClick={closeMobileMenu}>Projects</a></li>
+            <li><a href="#contact" onClick={closeMobileMenu}>Contact</a></li>
             <li>
-              <a href="#education">Education</a>
-            </li>
-            <li>
-              <a href="#experience">Experience</a>
-            </li>
-            <li>
-              <a href="#skills">Skills</a>
-            </li>
-            <li>
-              <a href="#projects">Projects</a>
-            </li>
-            <li>
-              <a href="#contact">Contact</a>
+              <button onClick={handleResumeDownload} className="mobile-resume-btn">
+                <i className="fas fa-download"></i> Download Resume
+              </button>
             </li>
           </ul>
         </div>
@@ -269,31 +349,35 @@ const Chinmaya = () => {
       <section id="home" className="hero">
         <div className="hero-container">
           <div className="hero-image-container">
-            {/* Profile photo */}
             <div className="profile-image">
               <img src="./Chinmaya.jpg" alt="Chinmaya Kolhe" />
             </div>
           </div>
 
           <div className="hero-content">
-            <h2>Chinmaya Kolhe</h2>
-            <h3>Full Stack Developer | Android Developer</h3>
-            <p>
+            <h2 className="animate-fade-in">Chinmaya Kolhe</h2>
+            <h3 className="animate-fade-in-delay-1">Full Stack Developer | Android Developer</h3>
+            <p className="animate-fade-in-delay-2">
               Pre-final year B.Tech in Information Technology student with
               expertise in full-stack web and mobile development. Proficient in
               MERN stack, Java, Python, and Android development.
             </p>
-            <div className="hero-buttons">
+            <div className="hero-buttons animate-fade-in-delay-3">
               <a href="#projects" className="btn btn-primary">
-                View Projects
+                <i className="fas fa-code"></i> View Projects
               </a>
-              <a href="#contact" className="btn btn-secondary">
-                Contact Me
+              <button onClick={handleResumeDownload} className="btn btn-secondary">
+                <i className="fas fa-download"></i> Download Resume
+              </button>
+              <a href="#contact" className="btn btn-outline">
+                <i className="fas fa-envelope"></i> Contact Me
               </a>
             </div>
           </div>
         </div>
       </section>
+
+      
 
       {/* Education Section */}
       <section id="education" className="education">
@@ -301,7 +385,7 @@ const Chinmaya = () => {
           <h2 className="section-title">Education</h2>
 
           <div className="education-timeline">
-            <div className="education-item">
+            <div className="education-item animate-slide-in">
               <div className="education-year">2024 - Present</div>
               <div className="education-content">
                 <h3>B.Tech - Information Technology</h3>
@@ -310,7 +394,7 @@ const Chinmaya = () => {
               </div>
             </div>
 
-            <div className="education-item">
+            <div className="education-item animate-slide-in">
               <div className="education-year">2021 - 2024</div>
               <div className="education-content">
                 <h3>Diploma - Computer Engineering</h3>
@@ -319,7 +403,7 @@ const Chinmaya = () => {
               </div>
             </div>
 
-            <div className="education-item">
+            <div className="education-item animate-slide-in">
               <div className="education-year">2015 - 2021</div>
               <div className="education-content">
                 <h3>SSC (10th Grade)</h3>
@@ -337,7 +421,7 @@ const Chinmaya = () => {
           <h2 className="section-title">Experience</h2>
 
           <div className="experience-grid">
-            <div className="experience-card">
+            <div className="experience-card animate-scale-in">
               <div className="experience-header">
                 <h3>MERN Stack Developer</h3>
                 <div className="company">PCCOE Dean Office, Pune</div>
@@ -355,7 +439,7 @@ const Chinmaya = () => {
               </ul>
             </div>
 
-            <div className="experience-card">
+            <div className="experience-card animate-scale-in">
               <div className="experience-header">
                 <h3>Backend Developer</h3>
                 <div className="company">CoffeTech Solutions, Mumbai</div>
@@ -382,7 +466,6 @@ const Chinmaya = () => {
           <h2 className="section-title">Technical Skills</h2>
 
           <div className="skills-grid">
-            {/* Skill items with logos */}
             {[
               {
                 name: "Java",
@@ -396,7 +479,6 @@ const Chinmaya = () => {
                 name: "Python",
                 logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",
               },
-
               {
                 name: "HTML5",
                 logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg",
@@ -450,7 +532,7 @@ const Chinmaya = () => {
                 logo: "https://cdn-icons-png.flaticon.com/512/3037/3037996.png",
               },
             ].map((skill, index) => (
-              <div key={index} className="skill-item">
+              <div key={index} className="skill-item animate-float-in" style={{animationDelay: `${index * 0.1}s`}}>
                 <img src={skill.logo} alt={skill.name} className="skill-logo" />
                 <span className="skill-name">{skill.name}</span>
               </div>
@@ -465,7 +547,6 @@ const Chinmaya = () => {
           <h2 className="section-title">Projects</h2>
 
           <div className="projects-grid">
-            {/* Project Cards */}
             {[
               {
                 title: "AgriNova - Connected Farming with Smart AI Predictions",
@@ -490,7 +571,7 @@ const Chinmaya = () => {
                 github: "https://github.com/ChinmayaKolhe/RecycleEase-Android",
               },
             ].map((project, index) => (
-              <div key={index} className="project-card">
+              <div key={index} className="project-card animate-slide-up" style={{animationDelay: `${index * 0.2}s`}}>
                 <h3>{project.title}</h3>
                 <p>{project.description}</p>
                 <div className="project-tech">{project.tech}</div>
@@ -514,7 +595,7 @@ const Chinmaya = () => {
           <h2 className="section-title">Get In Touch</h2>
 
           <div className="contact-container">
-            <form className="contact-form">
+            <form className="contact-form animate-slide-in">
               <div className="form-group">
                 <label htmlFor="name">Name</label>
                 <input type="text" id="name" />
@@ -528,11 +609,11 @@ const Chinmaya = () => {
                 <textarea id="message" rows="4"></textarea>
               </div>
               <button type="submit" className="btn btn-primary">
-                Send Message
+                <i className="fas fa-paper-plane"></i> Send Message
               </button>
             </form>
 
-            <div className="contact-info">
+            <div className="contact-info animate-slide-in">
               <a href="mailto:chinmayakolhe2005@gmail.com">
                 <i className="fas fa-envelope"></i> chinmayakolhe2005@gmail.com
               </a>
@@ -564,7 +645,6 @@ const Chinmaya = () => {
       </footer>
 
       <style jsx>{`
-        /* Include Font Awesome */
         @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css");
 
         /* Base Styles */
@@ -576,16 +656,12 @@ const Chinmaya = () => {
 
         body {
           font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+          overflow-x: hidden;
         }
 
         .chinmaya-portfolio {
           min-height: 100vh;
-          background: linear-gradient(
-            135deg,
-            #0f172a 0%,
-            #1e293b 50%,
-            #0f172a 100%
-          );
+          background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
           color: #f8fafc;
           line-height: 1.6;
           overflow-x: hidden;
@@ -608,6 +684,51 @@ const Chinmaya = () => {
           padding: 0 1.5rem;
         }
 
+        /* Animations */
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateX(-50px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(50px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes scaleIn {
+          from { opacity: 0; transform: scale(0.8); }
+          to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes floatIn {
+          from { opacity: 0; transform: translateY(20px) rotate(-5deg); }
+          to { opacity: 1; transform: translateY(0) rotate(0deg); }
+        }
+
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+
+        @keyframes sparkle {
+          0%, 100% { opacity: 0; }
+          50% { opacity: 1; }
+        }
+
+        .animate-fade-in { animation: fadeIn 1s ease-out; }
+        .animate-fade-in-delay-1 { animation: fadeIn 1s ease-out 0.3s both; }
+        .animate-fade-in-delay-2 { animation: fadeIn 1s ease-out 0.6s both; }
+        .animate-fade-in-delay-3 { animation: fadeIn 1s ease-out 0.9s both; }
+        .animate-slide-in { animation: slideIn 0.8s ease-out; }
+        .animate-slide-up { animation: slideUp 0.8s ease-out; }
+        .animate-scale-in { animation: scaleIn 0.8s ease-out; }
+        .animate-float-in { animation: floatIn 0.6s ease-out; }
+
         /* Navigation */
         .nav {
           position: fixed;
@@ -618,6 +739,13 @@ const Chinmaya = () => {
           z-index: 100;
           padding: 1rem 0;
           border-bottom: 1px solid rgba(14, 165, 233, 0.2);
+          transition: all 0.3s ease;
+        }
+
+        .nav-scrolled {
+          padding: 0.5rem 0;
+          background-color: rgba(15, 23, 42, 0.98);
+          box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
         }
 
         .nav-container {
@@ -641,7 +769,8 @@ const Chinmaya = () => {
         .nav-menu {
           display: flex;
           list-style: none;
-          gap: 2.5rem;
+          gap: 2rem;
+          align-items: center;
         }
 
         @media (max-width: 768px) {
@@ -676,6 +805,124 @@ const Chinmaya = () => {
 
         .nav-menu a:hover::after {
           width: 100%;
+        }
+
+        .nav-resume-btn {
+          background: linear-gradient(45deg, #0ea5e9, #7c3aed);
+          color: white;
+          border: none;
+          padding: 0.7rem 1.2rem;
+          border-radius: 25px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .nav-resume-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 25px rgba(14, 165, 233, 0.4);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-btn {
+          display: none;
+          flex-direction: column;
+          cursor: pointer;
+          background: none;
+          border: none;
+          padding: 0.5rem;
+          z-index: 101;
+        }
+
+        @media (max-width: 768px) {
+          .mobile-menu-btn {
+            display: flex;
+          }
+        }
+
+        .mobile-menu-btn span {
+          width: 25px;
+          height: 3px;
+          background: #0ea5e9;
+          margin: 3px 0;
+          transition: all 0.3s;
+          border-radius: 3px;
+        }
+
+        .mobile-menu-btn.active span:nth-child(1) {
+          transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .mobile-menu-btn.active span:nth-child(2) {
+          opacity: 0;
+        }
+
+        .mobile-menu-btn.active span:nth-child(3) {
+          transform: rotate(-45deg) translate(7px, -6px);
+        }
+
+        .mobile-menu {
+          position: fixed;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100vh;
+          background: rgba(15, 23, 42, 0.98);
+          backdrop-filter: blur(20px);
+          z-index: 99;
+          transition: left 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .mobile-menu.active {
+          left: 0;
+        }
+
+        .mobile-nav-menu {
+          list-style: none;
+          text-align: center;
+        }
+
+        .mobile-nav-menu li {
+          margin: 2rem 0;
+        }
+
+        .mobile-nav-menu a {
+          color: #cbd5e1;
+          text-decoration: none;
+          font-size: 1.5rem;
+          font-weight: 600;
+          transition: color 0.3s;
+        }
+
+        .mobile-nav-menu a:hover {
+          color: #0ea5e9;
+        }
+
+        .mobile-resume-btn {
+          background: linear-gradient(45deg, #0ea5e9, #7c3aed);
+          color: white;
+          border: none;
+          padding: 1rem 2rem;
+          border-radius: 30px;
+          font-weight: 600;
+          cursor: pointer;
+          font-size: 1.1rem;
+          transition: all 0.3s;
+          display: flex;
+          align-items: center;
+          gap: 0.7rem;
+          margin: 2rem auto;
+        }
+
+        .mobile-resume-btn:hover {
+          transform: scale(1.05);
+          box-shadow: 0 10px 30px rgba(14, 165, 233, 0.4);
         }
 
         /* Hero Section */
@@ -735,6 +982,7 @@ const Chinmaya = () => {
           background: linear-gradient(45deg, #0ea5e9, #7c3aed);
           padding: 4px;
           transition: all 0.3s;
+          animation: pulse 3s infinite;
         }
 
         .profile-image:hover {
@@ -799,8 +1047,63 @@ const Chinmaya = () => {
           }
         }
 
+        /* Resume CTA Section */
+        .resume-cta {
+          padding: 4rem 0;
+          background: rgba(124, 58, 237, 0.1);
+          border-top: 1px solid rgba(124, 58, 237, 0.2);
+          border-bottom: 1px solid rgba(124, 58, 237, 0.2);
+        }
+
+        .resume-cta-content {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 2rem;
+          text-align: center;
+        }
+
+        @media (min-width: 768px) {
+          .resume-cta-content {
+            text-align: left;
+          }
+        }
+
+        .resume-cta-text h3 {
+          font-size: 2rem;
+          color: #f8fafc;
+          margin-bottom: 0.5rem;
+        }
+
+        .resume-cta-text p {
+          color: #cbd5e1;
+          font-size: 1.1rem;
+        }
+
+        .resume-download-btn {
+          position: relative;
+          overflow: hidden;
+          animation: pulse 2s infinite;
+        }
+
+        .btn-sparkle {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 10px;
+          height: 10px;
+          background: white;
+          border-radius: 50%;
+          transform: translate(-50%, -50%);
+          animation: sparkle 2s infinite;
+        }
+
+        /* Button Styles */
         .btn {
-          display: inline-block;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
           padding: 1rem 2rem;
           border-radius: 50px;
           text-decoration: none;
@@ -809,6 +1112,8 @@ const Chinmaya = () => {
           position: relative;
           overflow: hidden;
           font-size: 1rem;
+          cursor: pointer;
+          border: none;
         }
 
         .btn::before {
@@ -834,7 +1139,6 @@ const Chinmaya = () => {
         .btn-primary {
           background: linear-gradient(45deg, #0ea5e9, #7c3aed);
           color: white;
-          border: none;
         }
 
         .btn-primary:hover {
@@ -852,6 +1156,18 @@ const Chinmaya = () => {
           background: rgba(14, 165, 233, 0.1);
           transform: translateY(-3px);
           box-shadow: 0 10px 30px rgba(14, 165, 233, 0.2);
+        }
+
+        .btn-outline {
+          background: transparent;
+          color: #7c3aed;
+          border: 2px solid #7c3aed;
+        }
+
+        .btn-outline:hover {
+          background: rgba(124, 58, 237, 0.1);
+          transform: translateY(-3px);
+          box-shadow: 0 10px 30px rgba(124, 58, 237, 0.2);
         }
 
         /* Section Styles */
@@ -1074,7 +1390,7 @@ const Chinmaya = () => {
         }
 
         .skill-item:hover {
-          transform: translateY(-8px);
+          transform: translateY(-8px) rotate(2deg);
           box-shadow: 0 15px 40px rgba(14, 165, 233, 0.2);
           border-color: rgba(14, 165, 233, 0.3);
         }
@@ -1087,7 +1403,7 @@ const Chinmaya = () => {
         }
 
         .skill-item:hover .skill-logo {
-          transform: scale(1.2);
+          transform: scale(1.2) rotate(-2deg);
         }
 
         .skill-name {
@@ -1245,7 +1561,7 @@ const Chinmaya = () => {
           gap: 1rem;
           color: #cbd5e1;
           text-decoration: none;
-          transition: color 0.3s;
+          transition: all 0.3s;
           padding: 0.8rem;
           border-radius: 8px;
         }
@@ -1253,6 +1569,7 @@ const Chinmaya = () => {
         .contact-info a:hover {
           color: #0ea5e9;
           background: rgba(14, 165, 233, 0.1);
+          transform: translateX(5px);
         }
 
         .contact-info i {
@@ -1268,9 +1585,36 @@ const Chinmaya = () => {
           color: #64748b;
           border-top: 1px solid rgba(14, 165, 233, 0.1);
         }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+          .hero-content h2 {
+            font-size: 2.5rem;
+          }
+          
+          .hero-content h3 {
+            font-size: 1.5rem;
+          }
+
+          .section-title {
+            font-size: 2.2rem;
+          }
+
+          .resume-cta-content {
+            flex-direction: column;
+            text-align: center;
+          }
+
+          .experience-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .projects-grid {
+            grid-template-columns: 1fr;
+          }
+        }
       `}</style>
     </div>
   );
-};
-
+}
 export default Chinmaya;
